@@ -5,43 +5,39 @@ namespace App\Repositories;
 use App\Models\SolarPanel;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
+use App\Http\DTOs\ProductQueryDTO;
+use App\Filters\SearchFilter;
+use App\Filters\ManufacturerFilter;
+use App\Filters\PriceFilter;
+use App\Filters\PowerFilter;
+use App\Filters\QueryFilters;
 
-class SolarPanelRepository implements SolarPanelRepositoryInterface
+class SolarPanelRepository implements SolarPanelRepositoryInterface, HasManufacturers, HasPowerRange
 {
-    public function paginate(
-        int $perPage = 10,
-        ?string $search = null,
-        ?string $manufacturer = null,
-        ?float $priceFrom = null,
-        ?float $priceTo = null,
-        ?float $capacityFrom = null,
-        ?float $capacityTo = null,
-        ?float $powerFrom = null,
-        ?float $powerTo = null,
-        ?string $connectorType = null
-    ): LengthAwarePaginator {
+    public function paginate(ProductQueryDTO $dto): LengthAwarePaginator
+    {
         $query = SolarPanel::query();
 
         $params = [
-            'search' => $search,
-            'manufacturer' => $manufacturer,
-            'price_from' => $priceFrom,
-            'price_to' => $priceTo,
-            'power_from' => $powerFrom,
-            'power_to' => $powerTo,
+            'search' => $dto->search,
+            'manufacturer' => $dto->manufacturer,
+            'price_from' => $dto->priceFrom,
+            'price_to' => $dto->priceTo,
+            'power_from' => $dto->powerFrom,
+            'power_to' => $dto->powerTo,
         ];
 
         $filters = [
-            \App\Filters\SearchFilter::class,
-            \App\Filters\ManufacturerFilter::class,
-            \App\Filters\PriceFilter::class,
-            \App\Filters\PowerFilter::class,
+            SearchFilter::class,
+            ManufacturerFilter::class,
+            PriceFilter::class,
+            PowerFilter::class,
         ];
 
-        $pipeline = new \App\Filters\QueryFilters($params, $filters);
+        $pipeline = new QueryFilters($params, $filters);
         $query = $pipeline->apply($query);
 
-        return $query->orderBy('id')->paginate($perPage);
+        return $query->orderBy('id')->paginate($dto->perPage);
     }
 
     public function manufacturers(): array
@@ -51,10 +47,6 @@ class SolarPanelRepository implements SolarPanelRepositoryInterface
         });
     }
 
-    public function capacityRange(): ?array
-    {
-        return null;
-    }
 
     public function powerRange(): ?array
     {
@@ -67,8 +59,4 @@ class SolarPanelRepository implements SolarPanelRepositoryInterface
         return ['min' => $min, 'max' => $max];
     }
 
-    public function connectorTypes(): ?array
-    {
-        return null;
-    }
 }

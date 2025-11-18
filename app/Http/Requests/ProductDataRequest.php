@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\ProductType;
+use Illuminate\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductDataRequest extends FormRequest
@@ -42,7 +43,7 @@ class ProductDataRequest extends FormRequest
         }
     }
 
-    public function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
+    public function withValidator(Validator $validator): void
     {
         $validator->after(function ($v) {
             $data = $this->all();
