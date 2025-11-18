@@ -25,9 +25,9 @@ class ImportCsvCommand extends Command
     public function handle(): int
     {
         $map = [
-            'batteries' => storage_path('app/private/batteries copy.csv'),
-            'connectors' => storage_path('app/private/connectors copy.csv'),
-            'solar_panels' => storage_path('app/private/solar_panels copy.csv'),
+            'batteries' => storage_path('app/data/batteries copy.csv'),
+            'connectors' => storage_path('app/data/connectors copy.csv'),
+            'solar_panels' => storage_path('app/data/solar_panels copy.csv'),
         ];
 
         foreach ($map as $table => $path) {
