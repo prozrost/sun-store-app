@@ -14,9 +14,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed CSV data (batteries, connectors, solar_panels)
-        $this->call([
-            CsvSeeder::class,
-        ]);
+       
     }
 }

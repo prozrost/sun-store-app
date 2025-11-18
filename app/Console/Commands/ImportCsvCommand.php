@@ -1,18 +1,28 @@
 <?php
 
-namespace Database\Seeders;
+namespace App\Console\Commands;
 
-use Illuminate\Database\Seeder;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CsvSeeder extends Seeder
+class ImportCsvCommand extends Command
 {
     /**
-     * Run the database seeds.
+     * The name and signature of the console command.
      */
-    public function run(): void
+    protected $signature = 'csv:import';
+
+    /**
+     * The console command description.
+     */
+    protected $description = 'Import CSV data into the database';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
     {
         $map = [
             'batteries' => storage_path('app/private/batteries copy.csv'),
@@ -22,14 +32,14 @@ class CsvSeeder extends Seeder
 
         foreach ($map as $table => $path) {
             if (! file_exists($path)) {
-                $this->command->info("CSV not found: {$path} — skipping {$table}");
+                $this->info("CSV not found: {$path} — skipping {$table}");
 
                 continue;
             }
 
             $handle = fopen($path, 'r');
             if ($handle === false) {
-                $this->command->error("Failed to open {$path}");
+                $this->error("Failed to open {$path}");
 
                 continue;
             }
@@ -61,7 +71,7 @@ class CsvSeeder extends Seeder
 
                 $data = @array_combine($header, $row);
                 if (! is_array($data)) {
-                    $this->command->warn("Skipping malformed CSV row {$line} in {$path} (column count mismatch)");
+                    $this->warn("Skipping malformed CSV row {$line} in {$path} (column count mismatch)");
 
                     continue;
                 }
@@ -122,12 +132,14 @@ class CsvSeeder extends Seeder
                     // Clear manufacturers cache for this table so UI picks up new values
                     Cache::forget("manufacturers:{$table}");
 
-                    $this->command->info("Imported {$path} -> {$table} (".count($rows).' rows)');
+                    $this->info("Imported {$path} -> {$table} (".count($rows).' rows)');
                 } catch (\Throwable $e) {
                     // Log and continue to next file; we don't want one bad file to stop the whole seeder
-                    $this->command->error("Failed to import {$path} -> {$table}: {$e->getMessage()}");
+                    $this->error("Failed to import {$path} -> {$table}: {$e->getMessage()}");
                 }
             }
         }
+
+        return Command::SUCCESS;
     }
 }
